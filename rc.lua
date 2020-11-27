@@ -592,19 +592,6 @@ client.connect_signal("property::floating", function(c)
     end
 end)
 
-client.connect_signal("property::maximized", function(c)
-    if c.maximized then
-        awful.titlebar.hide(c)
-    else 
-        if c.first_tag.layout.name == "floating" or c.floating then
-            if not c.requests_no_titlebar then
-                awful.titlebar.show(c)
-            end
-        end
-    end
-end)
-
-
 tag.connect_signal("property::layout", function(t)
     local clients = t:clients()
     for k,c in pairs(clients) do
