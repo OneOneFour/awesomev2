@@ -71,17 +71,17 @@ modkey = "Mod4"
 awful.layout.layouts = {
     awful.layout.suit.tile,
     awful.layout.suit.floating,
-    awful.layout.suit.tile.left,
-    awful.layout.suit.tile.bottom,
-    awful.layout.suit.tile.top,
-    awful.layout.suit.fair,
-    awful.layout.suit.fair.horizontal,
-    awful.layout.suit.spiral,
-    awful.layout.suit.spiral.dwindle,
-    awful.layout.suit.max,
-    awful.layout.suit.max.fullscreen,
-    awful.layout.suit.magnifier,
-    awful.layout.suit.corner.nw,
+    -- awful.layout.suit.tile.left,
+    -- awful.layout.suit.tile.bottom,
+    -- awful.layout.suit.tile.top,
+    -- awful.layout.suit.fair,
+    -- awful.layout.suit.fair.horizontal,
+    -- awful.layout.suit.spiral,
+    -- awful.layout.suit.spiral.dwindle,
+    -- awful.layout.suit.max,
+    -- awful.layout.suit.max.fullscreen,
+    -- awful.layout.suit.magnifier,
+    -- awful.layout.suit.corner.nw,
     -- awful.layout.suit.corner.ne,
     -- awful.layout.suit.corner.sw,
     -- awful.layout.suit.corner.se,
@@ -90,21 +90,21 @@ awful.layout.layouts = {
 
 -- {{{ Menu
 -- Create a launcher widget and a main menu
-myawesomemenu = {
-   { "hotkeys", function() hotkeys_popup.show_help(nil, awful.screen.focused()) end },
-   { "manual", terminal .. " -e man awesome" },
-   { "edit config", editor_cmd .. " " .. awesome.conffile },
-   { "restart", awesome.restart },
-   { "quit", function() awesome.quit() end },
-}
+-- myawesomemenu = {
+--    { "hotkeys", function() hotkeys_popup.show_help(nil, awful.screen.focused()) end },
+--    { "manual", terminal .. " -e man awesome" },
+--    { "edit config", editor_cmd .. " " .. awesome.conffile },
+--    { "restart", awesome.restart },
+--    { "quit", function() awesome.quit() end },
+-- }
 
-mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesome_icon },
-                                    { "open terminal", terminal }
-                                  }
-                        })
+-- mymainmenu = awful.menu({ items = { { "awesome", myawesomemenu, beautiful.awesome_icon },
+--                                     { "open terminal", terminal }
+--                                   }
+--                         })
 
-mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
-                                     menu = mymainmenu })
+-- mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
+--                                      menu = mymainmenu })
 
 -- Menubar configuration
 menubar.utils.terminal = terminal -- Set the terminal for applications that require it
@@ -112,8 +112,117 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 
 -- {{{ Wibar
 -- Create a textclock widget
-mytextclock = wibox.widget.textclock()
-
+local lain = require('lain')
+lain_volume = lain.widget.alsa{
+    timeout = 0.5,
+    settings = function()
+        if volume_now.status == 'on' then
+            widget:set_markup(volume_now.level .. '%')
+            widget:set_font("Montserrat 11")
+        else
+            widget:set_markup('muted')
+            widget:set_font("Montserrat 8.5")
+        end
+    end
+}
+volume = wibox.widget{
+    {
+        {
+          {
+              {
+            widget=wibox.widget.textbox,
+            text="vol",
+            id="hour",
+            font="Montserrat Bold 12",
+            align='right',
+            forced_width=30
+          },
+          widget=wibox.container.margin,
+          right=5
+        },
+          widget= wibox.container.background,
+          bg= beautiful.xres_theme.color1
+        },
+        {
+            {
+                {
+                    widget = lain_volume.widget,
+                },
+                widget= wibox.container.background,
+                fg= beautiful.xres_theme.color1
+            },
+            widget=wibox.container.margin,
+            left=5,
+            right=5
+        },
+        layout = wibox.layout.fixed.horizontal,
+    },
+    widget =wibox.container.background,
+    shape=gears.shape.rectangle,
+    shape_border_width = 3,
+    shape_border_color = beautiful.xres_theme.color1,
+}
+volume:buttons(gears.table.join(
+    awful.button({ }, 1, function () awful.spawn.with_shell('applet_volume') end)
+))
+local english_times = require('english_times')
+mytextclock = wibox.widget{
+    {
+        {
+          {
+              {
+            widget=wibox.widget.textbox,
+            text="one",
+            id="hour",
+            font="Montserrat Bold 12",
+            align='right',
+            forced_width=49
+          },
+          widget=wibox.container.margin,
+          right=5
+        },
+          widget= wibox.container.background,
+          bg= beautiful.fern_color
+        },
+        {
+            {
+                {
+                    id="minute",
+                    text="ten",
+                    widget = wibox.widget.textbox,
+                    font="Montserrat Medium 11",
+                    align='center'
+                },
+                widget= wibox.container.background,
+                fg= beautiful.fern_color
+            },
+            widget=wibox.container.margin,
+            left=5,
+            right=5
+        },
+        layout = wibox.layout.fixed.horizontal,
+    },
+    widget =wibox.container.background,
+    shape=gears.shape.rectangle,
+    shape_border_width = 3,
+    shape_border_color = beautiful.fern_color,
+    set_time = function(self,value)
+        self:get_children_by_id('hour')[1].text = english_times.hour[value.hour % 12]
+        self:get_children_by_id('minute')[1].text= english_times.minute[value.min + 1]
+    end,
+}
+gears.timer{
+    timeout=1,
+    call_now=true,
+    autostart=true,
+    callback = function()
+        current  = os.date("*t")
+        mytextclock.time = current
+    end
+}
+mytextclock:buttons(gears.table.join(
+    awful.button({ }, 1, function () awful.spawn.with_shell('applet_time') end)
+))
 -- Create a wibox for each screen and add it
 local taglist_buttons = gears.table.join(
                     awful.button({ }, 1, function(t) t:view_only() end),
@@ -194,44 +303,127 @@ awful.screen.connect_for_each_screen(function(s)
     s.mytaglist = awful.widget.taglist {
         screen  = s,
         filter  = awful.widget.taglist.filter.all,
-        buttons = taglist_buttons
+        buttons = taglist_buttons,
+        -- style = {
+        --     shape = gears.shape.rounded_bar
+        -- },
+        widget_template = { 
+            {
+                {
+                    widget = wibox.widget.textbox,
+                    forced_height=6,
+                    forced_width=8,
+
+                },
+                id='background_role',
+                widget=wibox.container.background,
+                shape=gears.shape.rect,
+            },
+            widget=wibox.container.margin,
+            left=4,
+            right=4,
+            top=11,
+            bottom=11
+        }
+    }
+
+    s.currentTag = awful.widget.taglist {
+        screen = s,
+        filter = awful.widget.taglist.filter.selected,
+        widget_template = {
+            {
+                id='text_role',
+                widget=wibox.widget.textbox,
+                forced_width=20,
+                align="center",
+            },
+            widget = wibox.container.background,
+            bg = beautiful.bg_focus
+        }
     }
 
     -- Create a tasklist widget
     s.mytasklist = awful.widget.tasklist {
         screen  = s,
         filter  = awful.widget.tasklist.filter.focused,
+
     }
 
-    -- Create the wibox
-    s.mywibox = awful.wibar({ position = "top", screen = s })
+    leftbox = wibox.widget{
+        {
+            s.currentTag,
+            {
+                s.mytaglist,
+                widget=wibox.container.margin,
+                left=5,
+                right=5
+            },
+            layout = wibox.layout.fixed.horizontal,
+        },
+        widget =wibox.container.background,
+        shape=gears.shape.rectangle,
+        shape_border_width = 3,
+        shape_border_color = beautiful.bg_focus 
+    }
+
+    -- right_widget = wibox.widget{
+    --     layout = wibox.layout.fixed.horizontal,
+    --     wibox.widget.systray(),
+    --     mytextclock,
+    --     s.mylayoutbox,
+    -- }
+    --s.wibar = awful.wibar({position='top',screen=s})
+
+    
+
+    -- s.wibar:setup{
+    --     layout = wibox.layout.align.horizontal,
+    --     leftbox,
+    --     wibox.widget.textbox(),
+    --     right_widget
+    -- }
+    --Create the wibox
+    s.leftbox = wibox({screen = s,width=160,height=30, x=10,y=5,type='dock'})
+    s.leftbox.visible = true
+    s.leftbox:struts({
+        top=35
+    })
+    s.leftbox.widget= leftbox
+
+    s.clockbox = wibox({screen=s,width=166,height=30,y=5,x=s.geometry.width - 176,type='dock'})
+    s.clockbox.visible = true
+    s.clockbox.widget = mytextclock
+
+
+    s.volbox = wibox({screen=s,width=85,height=30,y=5,x=s.geometry.width - 166 - 10*2 -85 ,type='dock'})
+    s.volbox.visible = true
+    s.volbox.widget = volume
+    -- s.rightbox = wibox({screen = s,width=150,height=25, x=s.geometry.width - 160,y=5,type='dock'})
+    -- s.rightbox.visible = true
+    -- s.rightbox:struts({
+    --     top=30
+    -- })
+    -- s.rightbox.widget= right_widget
+
+    
+
 
     -- Add widgets to the wibox
-    s.mywibox:setup {
-        layout = wibox.layout.align.horizontal,
-        { -- Left widgets
-            layout = wibox.layout.fixed.horizontal,
-            mylauncher,
-            s.mytaglist,
-            s.mypromptbox,
-        },
-       s.mytasklist, -- Middle widget
-        { -- Right widgets
-            layout = wibox.layout.fixed.horizontal,
-            wibox.widget.systray(),
-            mytextclock,
-            s.mylayoutbox,
-        },
-    }
+    -- s.mywibox:setup {
+    --     layout = wibox.layout.align.horizontal,
+    --     wibox.container.background(left_widget,beautiful.bg_normal), -- Middle widget
+    --     wibox.widget.textbox(),
+    --     wibox.container.background(right_widget,beautiful.bg_normal)
+    -- }
 end)
 -- }}}
 
 -- {{{ Mouse bindings
 root.buttons(gears.table.join(
-    awful.button({ }, 3, function () mymainmenu:toggle() end),
+    -- awful.button({ }, 3, function () mymainmenu:toggle() end),
     --Scroll on blank to change tag
-    awful.button({ }, 4, awful.tag.viewnext), 
-    awful.button({ }, 5, awful.tag.viewprev)
+    -- awful.button({ }, 4, awful.tag.viewnext), 
+    -- awful.button({ }, 5, awful.tag.viewprev)
 ))
 -- }}}
 
@@ -258,9 +450,6 @@ globalkeys = gears.table.join(
         end,
         {description = "focus previous by index", group = "client"}
     ),
-    awful.key({ modkey,           }, "w", function () mymainmenu:show() end,
-              {description = "show main menu", group = "awesome"}),
-
     -- Layout manipulation
     awful.key({ modkey, "Shift"   }, "j", function () awful.client.swap.byidx(  1)    end,
               {description = "swap with next client by index", group = "client"}),
@@ -320,19 +509,9 @@ globalkeys = gears.table.join(
               {description = "restore minimized", group = "client"}),
 
     -- Prompt
-    awful.key({ modkey },            "r",     function () awful.screen.focused().mypromptbox:run() end,
+    awful.key({ modkey },            "r", function () awful.spawn.with_shell("launcher_colorful") end,
               {description = "run prompt", group = "launcher"}),
 
-    awful.key({ modkey }, "x",
-              function ()
-                  awful.prompt.run {
-                    prompt       = "Run Lua code: ",
-                    textbox      = awful.screen.focused().mypromptbox.widget,
-                    exe_callback = awful.util.eval,
-                    history_path = awful.util.get_cache_dir() .. "/history_eval"
-                  }
-              end,
-              {description = "lua execute prompt", group = "awesome"}),
     -- Menubar
     awful.key({ modkey }, "p", function() menubar.show() end,
               {description = "show the menubar", group = "launcher"})
@@ -345,9 +524,16 @@ clientkeys = gears.table.join(
             c:raise()
         end,
         {description = "toggle fullscreen", group = "client"}),
-    awful.key({ modkey, "Shift"   }, "c",      function (c) c:kill()                         end,
+    awful.key({ modkey }, "q",      function (c) c:kill()                         end,
               {description = "close", group = "client"}),
-    awful.key({ modkey, "Control" }, "space",  awful.client.floating.toggle                     ,
+    awful.key({ modkey}, "g",  function (c) 
+                    c.floating = not c.floating
+                    if c.floating then
+                        awful.titlebar.show(c)
+                    else
+                        awful.titlebar.hide(c)
+                    end
+                end,
               {description = "toggle floating", group = "client"}),
     awful.key({ modkey, "Control" }, "Return", function (c) c:swap(awful.client.getmaster()) end,
               {description = "move to master", group = "client"}),
@@ -619,4 +805,4 @@ end)
 
 -- Autostart applications
 local spawn = require('awful.spawn')
-spawn.with_shell("picom &")
+spawn.with_shell("picom --experimental-backends &")

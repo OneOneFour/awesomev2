@@ -2,14 +2,22 @@ local xresources = require('beautiful.xresources')
 local xres_theme = xresources.get_current_theme()
 local gfs = require('gears.filesystem')
 local gw= require('gears.wallpaper')
+local shapes = require('gears.shape')
 local theme = {}
 theme.font = "Montserrat Medium 11"
 theme.wallpaper = os.getenv('HOME') .. '/Downloads/wallpaper3.jpg'
 theme.useless_gap = 5
+
+--COLORS
+theme.xres_theme = xres_theme
+theme.fox_color = '#a56d5e'
+theme.fern_color = '#41866a'
+
 -- Wibar
 theme.bg_normal = xres_theme.color0
-theme.bg_focus = xres_theme.color2
+theme.bg_focus = '#73CCB6'
 theme.bg_urgent = xres_theme.color1
+
 
 
 theme.fg_normal = xres_theme.color15
@@ -21,6 +29,19 @@ theme.tasklist_disable_icon = true
 theme.tasklist_align = "center"
 theme.tasklist_bg_focus = theme.bg_normal
 
+
+theme.taglist_font = "Montserrat Bold 12"
+theme.taglist_bg_occupied = '#f1f1f1'
+theme.taglist_bg_empty = xres_theme.color0
+theme.taglist_bg_urgent = xres_theme.color1
+theme.taglist_shape_border_color_urgent = xres_theme.color1
+
+theme.taglist_shape = shapes.rectangle
+theme.taglist_shape_border_width = 1
+theme.taglist_shape_border_color = theme.bg_focus
+theme.taglist_shape_border_color_focus = theme.bg_focus
+
+theme.wibar_height = 32
 
 
 --Titlebar
