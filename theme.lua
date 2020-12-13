@@ -42,7 +42,7 @@ theme.taglist_shape_border_color = theme.bg_focus
 theme.taglist_shape_border_color_focus = theme.bg_focus
 
 theme.wibar_height = 32
-
+theme.wibar_bg = '#00000000'
 
 --Titlebar
 theme.titlebar_bg = xres_theme.color0 

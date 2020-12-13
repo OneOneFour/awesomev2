@@ -1,4 +1,5 @@
 hour = {
+    [0] = "twelve",
     "one",
     "two",
     "three",
@@ -9,8 +10,7 @@ hour = {
     "eight",
     "nine",
     "ten",
-    "eleven",
-    "twelve"
+    "eleven"
 }
 
 minute = {

@@ -181,31 +181,16 @@ awful.screen.connect_for_each_screen(function(s)
     -- }
 
 
-    -- right_widget = wibox.widget{
-    --     layout = wibox.layout.fixed.horizontal,
-    --     wibox.widget.systray(),
-    --     mytextclock,
-    --     s.mylayoutbox,
-    -- }
-    --s.wibar = awful.wibar({position='top',screen=s})
-
-    
-
-    -- s.wibar:setup{
-    --     layout = wibox.layout.align.horizontal,
-    --     leftbox,
-    --     wibox.widget.textbox(),
-    --     right_widget
-    -- }
+  
     --Create the wibox
-    local robert_widget = require('rob_square_widgets')
+    local square_widget = require('square_widgets')
 
 
     leftbox = wibox.widget{
         {
-            robert_widget.currentTag(s),
+            square_widget.currentTag(s),
             {
-                robert_widget.mytaglist(s),
+                square_widget.mytaglist(s),
                 widget=wibox.container.margin,
                 left=5,
                 right=5
@@ -215,25 +200,29 @@ awful.screen.connect_for_each_screen(function(s)
         widget =wibox.container.background,
         shape=gears.shape.rectangle,
         shape_border_width = 3,
-        shape_border_color = beautiful.bg_focus 
+        shape_border_color = beautiful.bg_focus,
+        bg = beautiful.bg_normal
+    }
+
+  right_widget = wibox.widget{
+        layout = wibox.layout.fixed.horizontal,
+        wibox.widget.systray(),
+        wibox.container.margin(volume,5,5,0,0),
+        wibox.container.margin(mytextclock,5,0,0,0),
+        -- s.mylayoutbox,
+    }
+    s.wibar = awful.wibar({position='bottom',screen=s})
+
+    
+
+    s.wibar:setup{
+        layout = wibox.layout.align.horizontal,
+        leftbox,
+        wibox.widget.textbox(),
+        right_widget
     }
 
 
-    s.leftbox = wibox({screen = s,width=160,height=30, x=10,y=5,type='dock'})
-    s.leftbox.visible = true
-    s.leftbox:struts({
-        top=35
-    })
-    s.leftbox.widget= leftbox
-
-    s.clockbox = wibox({screen=s,width=166,height=30,y=5,x=s.geometry.width - 176,type='dock'})
-    s.clockbox.visible = true
-    s.clockbox.widget = robert_widget.mytextclock
-
-
-    s.volbox = wibox({screen=s,width=85,height=30,y=5,x=s.geometry.width - 166 - 10*2 -85 ,type='dock'})
-    s.volbox.visible = true
-    s.volbox.widget = robert_widget.volume
     -- s.rightbox = wibox({screen = s,width=150,height=25, x=s.geometry.width - 160,y=5,type='dock'})
     -- s.rightbox.visible = true
     -- s.rightbox:struts({
@@ -331,6 +320,11 @@ globalkeys = gears.table.join(
               {description = "select next", group = "layout"}),
     awful.key({ modkey, "Shift"   }, "space", function () awful.layout.inc(-1)                end,
               {description = "select previous", group = "layout"}),
+    --Volume
+    awful.key({},"XF86AudioRaiseVolume",function() awful.spawn("pactl -- set-sink-volume 0 +10%") end),
+    awful.key({},"XF86AudioLowerVolume",function() awful.spawn("pactl -- set-sink-volume 0 -10%") end),
+    awful.key({},"XF86AudioMute",function () awful.spawn("pamixer -t") end),
+
 
     awful.key({ modkey, "Control" }, "n",
               function ()
@@ -641,4 +635,5 @@ end)
 
 -- Autostart applications
 local spawn = require('awful.spawn')
+spawn.with_shell("pactl list sinks") -- Needed to give non NaN result for volume widget for some reason
 spawn.with_shell("picom --experimental-backends &")
